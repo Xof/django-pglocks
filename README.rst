@@ -2,13 +2,26 @@
 django-pglocks
 ==============
 
-django-pglocks provides a useful context manager to manage PostgreSQL advisory locks. It requires Django (tested with 1.5), PostgreSQL, and (probably psycopg2.
+django-pglocks provides a useful context manager to manage PostgreSQL advisory locks. It requires Django (tested with 1.5), PostgreSQL, and (probably) psycopg2.
+
+Advisory Locks
+==============
 
 Advisory locks are application-level locks that are acquired and released purely by the client of the database; PostgreSQL never acquires them on its own. They are very useful as a way of signalling to other sessions that a higher-level resource than a single row is in use, without having to lock an entire table or some other structure.
 
 It's entirely up to the application to correctly acquire the right lock.
 
 Advisory locks are either session locks or transaction locks. A session lock is held until the database session disconnects (or is reset); a transaction lock is held until the transaction terminates. If ``advisory_lock`` is called with a transaction (managed by Django) currently open, a transaction lock is created; otherwise, a session lock is.
+
+Installing
+==========
+
+Just use pip::
+
+    pip install django-pglocks
+
+Usage
+=====
 
 Usage example::
 
