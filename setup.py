@@ -29,12 +29,11 @@ setup(
         'facetools': ['templates/facetools/facebook_redirect.html'],
     },
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: PostgreSQL License',
-        'Natural Language :: English',
-        'Topic :: Software Development :: Testing',
+        'Topic :: Software Development',
     ]
 )
