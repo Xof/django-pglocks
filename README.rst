@@ -30,3 +30,8 @@ The parameters are:
 * ``wait`` (default True) -- If true, the context manager will wait until the lock has been acquired before executing the content; in that case, it always returns True (unless a deadlock occurs, in which case an exception is thrown). If false, the context manager will return immediately even if it cannot take the lock, in which case it returns false. Note that the context body is *always* executed; the only way to tell in the ``wait=False`` case whether or not the lock was acquired is to check the returned value.
 
 * ``using`` (default None) -- The database alias on which to attempt to acquire the lock. If None, the default connection is used.
+
+License
+=======
+
+It's released under the `MIT License <http://opensource.org/licenses/mit-license.php>`.
