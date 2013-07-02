@@ -34,4 +34,4 @@ The parameters are:
 License
 =======
 
-It's released under the `MIT License <http://opensource.org/licenses/mit-license.php>`.
+It's released under the `MIT License <http://opensource.org/licenses/mit-license.php>`_.
