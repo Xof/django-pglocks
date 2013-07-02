@@ -20,7 +20,7 @@ setup(
     long_description = get_long_description(),
     author = "Christophe Pettus",
     author_email = "xof@thebuild.com",
-    license = "PostgreSQL",
+    license = "MIT",
     url = "https://github.com/Xof/django-pglocks",
     packages = [
         'django_pglocks',
@@ -33,7 +33,7 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: PostgreSQL License',
+        'License :: OSI Approved :: MIT License',
         'Topic :: Software Development',
     ]
 )
