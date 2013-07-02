@@ -11,7 +11,9 @@ Advisory locks are application-level locks that are acquired and released purely
 
 It's entirely up to the application to correctly acquire the right lock.
 
-Advisory locks are either session locks or transaction locks. A session lock is held until the database session disconnects (or is reset); a transaction lock is held until the transaction terminates. If ``advisory_lock`` is called with a transaction (managed by Django) currently open, a transaction lock is created; otherwise, a session lock is.
+Advisory locks are either session locks or transaction locks. A session lock is held until the database session disconnects (or is reset); a transaction lock is held until the transaction terminates.
+
+Currently, the context manager only creates session locks, as the behavior of a lock persisting after the context body has been exited is surprising, and there's no way of releasing a transaction-scope advisory lock except to exit the transaction.
 
 Installing
 ==========
@@ -48,3 +50,8 @@ License
 =======
 
 It's released under the `MIT License <http://opensource.org/licenses/mit-license.php>`_.
+
+Change History 1.0.1
+====================
+
+Removed transaction-level locks, as their behavior was somwhat surprisng (having the lock persist after the context manager exited was unexpected behavior).

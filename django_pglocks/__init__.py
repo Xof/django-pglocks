@@ -1,4 +1,4 @@
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 from contextlib import contextmanager
 
@@ -10,14 +10,6 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     if using is None:
         using = DEFAULT_DB_ALIAS
 
-    # Django 1.5 uses .is_managed(); Django 1.6 has a public interface of .get_autocommit(); this allows
-    # for either.
-
-    try:
-        in_transaction = not transaction.get_autocommit(using)
-    except AttributeError:
-        in_transaction = connections[using].is_managed()
-
     # Assemble the function name based on the options.
 
     function_name = 'pg_'
@@ -25,22 +17,14 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     if not wait:
         function_name += 'try_'
 
-    function_name += 'advisory_'
-
-    if in_transaction:
-        function_name += 'xact_'
-
-    function_name += 'lock'
+    function_name += 'advisory_lock'
 
     if shared:
         function_name += '_shared'
 
-    if not in_transaction:
-        release_function_name = 'pg_advisory_unlock'
-        if shared:
-            release_function_name += '_shared'
-    else:
-        release_function_name = None
+    release_function_name = 'pg_advisory_unlock'
+    if shared:
+        release_function_name += '_shared'
 
     # Format up the parameters.
 
@@ -76,7 +60,7 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     try:
         yield acquired
     finally:
-        if acquired and release_function_name:
+        if acquired:
             release_params = ( release_function_name, ) + params
 
             command = base % release_params
