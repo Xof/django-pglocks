@@ -12,7 +12,14 @@ Advisory locks are either session locks or transaction locks. A session lock is 
 
 Usage example::
 
- from django_pglocks import advisory_lock lock_id = 'some lock' with advisory_lock(lock_id) as acquired: # code that should be inside of the lock. The context manager attempts to take the lock, and then executes the code inside the context with the lock acquired. The lock is released when the context exits, either normally or via exception.
+    from django_pglocks import advisory_lock 
+    
+    lock_id = 'some lock'
+    
+    with advisory_lock(lock_id) as acquired:
+        # code that should be inside of the lock.
+        
+The context manager attempts to take the lock, and then executes the code inside the context with the lock acquired. The lock is released when the context exits, either normally or via exception.
 
 The parameters are:
 
