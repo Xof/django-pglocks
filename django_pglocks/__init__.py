@@ -2,10 +2,11 @@ __version__ = '1.0'
 
 from contextlib import contextmanager
 
-from django.db import DEFAULT_DB_ALIAS, connections, transaction
-
 @contextmanager
 def advisory_lock(lock_id, shared=False, wait=True, using=None):
+
+    from django.db import DEFAULT_DB_ALIAS, connections, transaction
+
     if using is None:
         using = DEFAULT_DB_ALIAS
 
