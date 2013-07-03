@@ -54,4 +54,4 @@ It's released under the `MIT License <http://opensource.org/licenses/mit-license
 Change History 1.0.1
 ====================
 
-Removed transaction-level locks, as their behavior was somwhat surprisng (having the lock persist after the context manager exited was unexpected behavior).
+Removed transaction-level locks, as their behavior was somewhat surprising (having the lock persist after the context manager exited was unexpected behavior).
