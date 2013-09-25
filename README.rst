@@ -27,13 +27,13 @@ Usage
 
 Usage example::
 
-    from django_pglocks import advisory_lock 
-    
+    from django_pglocks import advisory_lock
+
     lock_id = 'some lock'
-    
+
     with advisory_lock(lock_id) as acquired:
         # code that should be inside of the lock.
-        
+
 The context manager attempts to take the lock, and then executes the code inside the context with the lock acquired. The lock is released when the context exits, either normally or via exception.
 
 The parameters are:
@@ -45,6 +45,20 @@ The parameters are:
 * ``wait`` (default True) -- If True (the default), the context manager will wait until the lock has been acquired before executing the content; in that case, it always returns True (unless a deadlock occurs, in which case an exception is thrown). If False, the context manager will return immediately even if it cannot take the lock, in which case it returns false. Note that the context body is *always* executed; the only way to tell in the ``wait=False`` case whether or not the lock was acquired is to check the returned value.
 
 * ``using`` (default None) -- The database alias on which to attempt to acquire the lock. If None, the default connection is used.
+
+Contributing
+============
+
+To run the test suite, you must create a user and a database::
+
+    $ createuser -s -P django_pglocks
+    Enter password for new role: django_pglocks
+    Enter it again: django_pglocks
+    $ createdb django_pglocks -O django_pglocks
+
+You can then run the tests with::
+
+    $ DJANGO_SETTINGS_MODULE=django_pglocks.test_settings PYTHONPATH=. django-admin.py test
 
 License
 =======
