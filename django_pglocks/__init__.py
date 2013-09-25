@@ -71,3 +71,5 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
             command = base % release_params
             cursor.execute(command)
+
+        cursor.close()
