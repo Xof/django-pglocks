@@ -57,10 +57,9 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
     acquired = cursor.fetchone()[0]
 
-    try:
-        # Translate to pythonic values
-        acquired = {'': None, 'true': True, 'false': False}[acquired]
-    except KeyError:
+    if acquired == '':
+        acquired = None
+    elif acquired not in (True, False):
         raise ValueError("Unexpected value returned by PostgreSQL: %r" % acquired)
 
     try:
