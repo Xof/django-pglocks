@@ -39,7 +39,7 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
         tuple_format = True
     elif not isinstance(lock_id, (int, long,)):
-        lock_id = long(lock_id.__hash__())
+        lock_id = long(hash(lock_id))
 
     if tuple_format:
         base = "SELECT %s(%d, %d)"
@@ -59,8 +59,6 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
     if acquired == '':
         acquired = None
-    elif acquired not in (True, False):
-        raise ValueError("Unexpected value returned by PostgreSQL: %r" % acquired)
 
     try:
         yield acquired

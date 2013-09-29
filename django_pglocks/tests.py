@@ -100,3 +100,62 @@ class PgLocksTests(TransactionTestCase):
         t2.start()
         t1.join()
         t2.join()
+
+    def test_shared(self):
+        lock_acquired = threading.Event()
+
+        def run1():
+            # This thread will acquire the lock and force the other to wait.
+            try:
+                with advisory_lock('test', shared=True) as acquired:
+                    self.assertIsNone(acquired)
+                    lock_acquired.set()
+                    time.sleep(2 * TIME_UNIT)
+            finally:
+                connection.close()
+
+        def run2():
+            # This thread will wait until the other releases the lock.
+            try:
+                lock_acquired.wait(TIME_UNIT)
+                t0 = time.time()
+                with advisory_lock('test', shared=True) as acquired:
+                    self.assertIsNone(acquired)
+                t1 = time.time()
+                self.assertTrue(t1 - t0 < TIME_UNIT)
+            finally:
+                connection.close()
+
+        t1 = threading.Thread(target=run1)
+        t2 = threading.Thread(target=run2)
+        t1.start()
+        t2.start()
+        t1.join()
+        t2.join()
+
+    def test_ids(self):
+        # Arbitrary ids
+        with advisory_lock(object):
+            self.assertNumLocks(1)
+
+        # Incorrect arbitrary ids
+        with self.assertRaises(TypeError):
+            with advisory_lock({}):
+                pass
+
+        # Explicit ids
+        with advisory_lock(1):
+            self.assertNumLocks(1)
+        with advisory_lock([1, 2]):
+            self.assertNumLocks(1)
+
+        # Incorrect explicit ids
+        with self.assertRaises(ValueError):
+            with advisory_lock([1]):
+                pass
+        with self.assertRaises(ValueError):
+            with advisory_lock(['a', 'b']):
+                pass
+        with self.assertRaises(ValueError):
+            with advisory_lock([1, 2, 3]):
+                pass
