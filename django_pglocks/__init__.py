@@ -58,10 +58,18 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     acquired = cursor.fetchone()[0]
 
     try:
+        # Translate to pythonic values
+        acquired = {'': None, 'true': True, 'false': False}[acquired]
+    except KeyError:
+        raise ValueError("Unexpected value returned by PostgreSQL: %r" % acquired)
+
+    try:
         yield acquired
     finally:
-        if acquired:
+        if acquired is None or acquired:
             release_params = ( release_function_name, ) + params
 
             command = base % release_params
             cursor.execute(command)
+
+        cursor.close()
