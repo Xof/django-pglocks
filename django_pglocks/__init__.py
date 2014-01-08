@@ -1,4 +1,4 @@
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 from contextlib import contextmanager
 
@@ -55,18 +55,15 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
     cursor.execute(command)
 
-    acquired = cursor.fetchone()[0]
-
-    try:
-        # Translate to pythonic values
-        acquired = {'': None, 'true': True, 'false': False}[acquired]
-    except KeyError:
-        raise ValueError("Unexpected value returned by PostgreSQL: %r" % acquired)
+    if not wait:
+        acquired = cursor.fetchone()[0]
+    else:
+        acquired = True
 
     try:
         yield acquired
     finally:
-        if acquired is None or acquired:
+        if acquired:
             release_params = ( release_function_name, ) + params
 
             command = base % release_params
