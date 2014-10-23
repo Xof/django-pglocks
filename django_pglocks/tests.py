@@ -24,9 +24,23 @@ class PgLocksTests(TransactionTestCase):
         cursor.close()
         self.assertEqual(actual, expected)
 
-    def test_basic_lock(self):
+    def test_basic_lock_str(self):
         self.assertNumLocks(0)
         with advisory_lock('test') as acquired:
+            self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_int(self):
+        self.assertNumLocks(0)
+        with advisory_lock(123) as acquired:
+            self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_tuple(self):
+        self.assertNumLocks(0)
+        with advisory_lock(123, 456) as acquired:
             self.assertTrue(acquired)
             self.assertNumLocks(1)
         self.assertNumLocks(0)
