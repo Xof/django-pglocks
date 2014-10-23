@@ -27,6 +27,6 @@ class PgLocksTests(TransactionTestCase):
     def test_basic_lock(self):
         self.assertNumLocks(0)
         with advisory_lock('test') as acquired:
-            self.assertIsNone(acquired)
+            self.assertTrue(acquired)
             self.assertNumLocks(1)
         self.assertNumLocks(0)
