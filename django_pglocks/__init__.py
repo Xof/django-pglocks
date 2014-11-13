@@ -3,13 +3,11 @@ __version__ = '1.0.2'
 from contextlib import contextmanager
 from zlib import crc32
 
-from django.utils import six
-
-
 @contextmanager
 def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
     from django.db import DEFAULT_DB_ALIAS, connections, transaction
+    from django.utils import six
 
     if using is None:
         using = DEFAULT_DB_ALIAS
