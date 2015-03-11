@@ -1,4 +1,4 @@
-from django.db import connection
+from django.db import connection, transaction
 from django.test import TransactionTestCase
 
 from django_pglocks import advisory_lock
@@ -42,5 +42,14 @@ class PgLocksTests(TransactionTestCase):
         self.assertNumLocks(0)
         with advisory_lock(123, 456) as acquired:
             self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_xact_lock(self):
+        with getattr(transaction, 'atomic', transaction.commit_on_success)():
+            self.assertNumLocks(0)
+            with advisory_lock('xact', xact=True) as acquired:
+                self.assertTrue(acquired)
+                self.assertNumLocks(1)
             self.assertNumLocks(1)
         self.assertNumLocks(0)
