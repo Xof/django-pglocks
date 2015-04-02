@@ -44,3 +44,11 @@ class PgLocksTests(TransactionTestCase):
             self.assertTrue(acquired)
             self.assertNumLocks(1)
         self.assertNumLocks(0)
+
+    def test_contextdecorator(self):
+        @advisory_lock(123)
+        def assert_decorator_locked():
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+        assert_decorator_locked()
+        self.assertNumLocks(0)

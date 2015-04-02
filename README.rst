@@ -65,6 +65,11 @@ License
 
 It's released under the `MIT License <http://opensource.org/licenses/mit-license.php>`_.
 
+Change History 1.0.3
+====================
+
+Enable use as a decorator.
+
 Change History 1.0.2
 ====================
 
