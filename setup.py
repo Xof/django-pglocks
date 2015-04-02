@@ -2,7 +2,6 @@
 
 from setuptools import setup
 
-
 def get_long_description():
     """
     Return the contents of the README file.

@@ -1,82 +1,88 @@
 __version__ = '1.0.3'
 
-from contextdecorator import contextmanager
+from contextdecorator import ContextDecorator
 from zlib import crc32
 
-@contextmanager
-def advisory_lock(lock_id, shared=False, wait=True, using=None):
+class advisory_lock(ContextDecorator):
 
-    from django.db import DEFAULT_DB_ALIAS, connections
-    import six
+    def __init__(self, lock_id, shared=False, wait=True, using=None):
+        self.lock_id = lock_id
+        self.shared = shared
+        self.wait = wait
+        self.using = using
 
-    if using is None:
-        using = DEFAULT_DB_ALIAS
+    def __enter__(self):
+        from django.db import DEFAULT_DB_ALIAS, connections
+        import six
 
-    # Assemble the function name based on the options.
+        if self.using is None:
+            self.using = DEFAULT_DB_ALIAS
 
-    function_name = 'pg_'
+        # Assemble the function name based on the options.
 
-    if not wait:
-        function_name += 'try_'
+        function_name = 'pg_'
 
-    function_name += 'advisory_lock'
+        if not self.wait:
+            function_name += 'try_'
 
-    if shared:
-        function_name += '_shared'
+        function_name += 'advisory_lock'
 
-    release_function_name = 'pg_advisory_unlock'
-    if shared:
-        release_function_name += '_shared'
+        if self.shared:
+            function_name += '_shared'
 
-    # Format up the parameters.
+        self.release_function_name = 'pg_advisory_unlock'
+        if self.shared:
+            self.release_function_name += '_shared'
 
-    tuple_format = False
+        # Format up the parameters.
 
-    if isinstance(lock_id, (list, tuple,)):
-        if len(lock_id) != 2:
-            raise ValueError("Tuples and lists as lock IDs must have exactly two entries.")
+        tuple_format = False
 
-        if not isinstance(lock_id[0], six.integer_types) or not isinstance(lock_id[1], six.integer_types):
-            raise ValueError("Both members of a tuple/list lock ID must be integers")
+        if isinstance(self.lock_id, (list, tuple,)):
+            if len(self.lock_id) != 2:
+                raise ValueError("Tuples and lists as lock IDs must have exactly two entries.")
 
-        tuple_format = True
-    elif isinstance(lock_id, six.string_types):
-        # Generates an id within postgres integer range (-2^31 to 2^31 - 1).
-        # crc32 generates an unsigned integer in Py3, we convert it into
-        # a signed integer using 2's complement (this is a noop in Py2)
-        pos = crc32(lock_id.encode("utf-8"))
-        lock_id = (2**31 - 1) & pos
-        if pos & 2**31:
-            lock_id -= 2**31
-    elif not isinstance(lock_id, six.integer_types):
-        raise ValueError("Cannot use %s as a lock id" % lock_id)
+            if not isinstance(self.lock_id[0], six.integer_types) or not isinstance(self.lock_id[1], six.integer_types):
+                raise ValueError("Both members of a tuple/list lock ID must be integers")
 
-    if tuple_format:
-        base = "SELECT %s(%d, %d)"
-        params = (lock_id[0], lock_id[1],)
-    else:
-        base = "SELECT %s(%d)"
-        params = (lock_id,)
+            tuple_format = True
+        elif isinstance(self.lock_id, six.string_types):
+            # Generates an id within postgres integer range (-2^31 to 2^31 - 1).
+            # crc32 generates an unsigned integer in Py3, we convert it into
+            # a signed integer using 2's complement (this is a noop in Py2)
+            pos = crc32(self.lock_id.encode("utf-8"))
+            self.lock_id = (2**31 - 1) & pos
+            if pos & 2**31:
+                self.lock_id -= 2**31
+        elif not isinstance(self.lock_id, six.integer_types):
+            raise ValueError("Cannot use %s as a lock id" % self.lock_id)
 
-    acquire_params = ( function_name, ) + params
+        if tuple_format:
+            self.base = "SELECT %s(%d, %d)"
+            self.params = (self.lock_id[0], self.lock_id[1],)
+        else:
+            self.base = "SELECT %s(%d)"
+            self.params = (self.lock_id,)
 
-    command = base % acquire_params
-    cursor = connections[using].cursor()
+        acquire_params = ( function_name, ) + self.params
 
-    cursor.execute(command)
+        command = self.base % acquire_params
+        self.cursor = connections[self.using].cursor()
 
-    if not wait:
-        acquired = cursor.fetchone()[0]
-    else:
-        acquired = True
+        self.cursor.execute(command)
 
-    try:
-        yield acquired
-    finally:
-        if acquired:
-            release_params = ( release_function_name, ) + params
+        if not self.wait:
+            self.acquired = self.cursor.fetchone()[0]
+        else:
+            self.acquired = True
 
-            command = base % release_params
-            cursor.execute(command)
+        return self.acquired
 
-        cursor.close()
+    def __exit__(self, *exc):
+        if self.acquired:
+            release_params = ( self.release_function_name, ) + self.params
+
+            command = self.base % release_params
+            self.cursor.execute(command)
+
+        self.cursor.close()

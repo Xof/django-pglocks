@@ -52,3 +52,4 @@ class PgLocksTests(TransactionTestCase):
         self.assertNumLocks(0)
         assert_decorator_locked()
         self.assertNumLocks(0)
+        assert_decorator_locked()
