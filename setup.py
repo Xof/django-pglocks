@@ -22,6 +22,7 @@ setup(
     author_email = "xof@thebuild.com",
     license = "MIT",
     url = "https://github.com/Xof/django-pglocks",
+    download_url = 'https://github.com/Xof/django-pglocks/tarball/1.0.2',
     packages = [
         'django_pglocks',
     ],
