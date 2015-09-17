@@ -21,6 +21,12 @@ Installing
 Just use pip::
 
     pip install django-pglocks
+    
+Transactions
+============
+
+This assumes you are controlling transactions within the view; do not use this
+if you controlling transactions through the Django transation middleware.
 
 Usage
 =====
