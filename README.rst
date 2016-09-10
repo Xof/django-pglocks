@@ -55,7 +55,7 @@ The parameters are:
 Contributing
 ============
 
-To run the test suite, you must create a user and a database::
+To run the test suite, you must create a user and a database, and install `tox <https://pypi.python.org/pypi/tox>`_::
 
     $ createuser -s -P django_pglocks
     Enter password for new role: django_pglocks
@@ -64,7 +64,7 @@ To run the test suite, you must create a user and a database::
 
 You can then run the tests with::
 
-    $ DJANGO_SETTINGS_MODULE=django_pglocks.test_settings PYTHONPATH=. django-admin.py test
+    $ tox
 
 License
 =======
