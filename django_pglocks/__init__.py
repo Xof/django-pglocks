@@ -90,18 +90,20 @@ def advisory_lock_acquired(lock_id, using=None):
     if using is None:
         using = DEFAULT_DB_ALIAS
 
+    tuple_format, lock_id = format_lock_id(lock_id)
+
+    if tuple_format:
+        where_clause = "classid::bigint = %d AND objid::bigint = %d"
+        params = (lock_id[0], lock_id[1],)
+    else:
+        where_clause = "(classid::bigint << 32) | objid::bigint = %d"
+        params = (lock_id,)
+
+    command = "SELECT 1 FROM pg_locks WHERE %s LIMIT 1" % (where_clause % params)
+
     with closing(connections[using]) as connection, \
             closing(connection.cursor()) as cursor:
-        tuple_format, lock_id = format_lock_id(lock_id)
 
-        if tuple_format:
-            where_clause = "classid::bigint = %d AND objid::bigint = %d"
-            params = (lock_id[0], lock_id[1],)
-        else:
-            where_clause = "(classid::bigint << 32) | objid::bigint = %d"
-            params = (lock_id,)
-
-        command = "SELECT 1 FROM pg_locks WHERE %s LIMIT 1" % (where_clause % params)
         cursor.execute(command)
 
         return bool(cursor.fetchone())
