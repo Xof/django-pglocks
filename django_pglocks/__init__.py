@@ -101,9 +101,7 @@ def advisory_lock_acquired(lock_id, using=None):
 
     command = "SELECT 1 FROM pg_locks WHERE %s LIMIT 1" % (where_clause % params)
 
-    with closing(connections[using]) as connection, \
-            closing(connection.cursor()) as cursor:
-
+    with closing(connections[using].cursor()) as cursor:
         cursor.execute(command)
 
         return bool(cursor.fetchone())

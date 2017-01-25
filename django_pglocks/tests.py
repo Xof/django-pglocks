@@ -1,7 +1,7 @@
 from django.db import connection
 from django.test import TransactionTestCase
 
-from django_pglocks import advisory_lock
+from django_pglocks import advisory_lock, advisory_lock_acquired
 
 
 class PgLocksTests(TransactionTestCase):
@@ -44,3 +44,11 @@ class PgLocksTests(TransactionTestCase):
             self.assertTrue(acquired)
             self.assertNumLocks(1)
         self.assertNumLocks(0)
+
+    def test_lock_acquired(self):
+        self.assertFalse(advisory_lock_acquired(234))
+        with advisory_lock(234) as acquired:
+            self.assertTrue(acquired)
+            self.assertTrue(advisory_lock_acquired(234))
+
+        self.assertFalse(advisory_lock_acquired(234))
