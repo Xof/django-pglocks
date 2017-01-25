@@ -50,5 +50,4 @@ class PgLocksTests(TransactionTestCase):
         with advisory_lock(234) as acquired:
             self.assertTrue(acquired)
             self.assertTrue(advisory_lock_acquired(234))
-
         self.assertFalse(advisory_lock_acquired(234))
