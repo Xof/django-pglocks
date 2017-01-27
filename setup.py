@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-
-import django_pglocks
+from setuptools import setup
 
 def get_long_description():
     """
@@ -15,8 +13,8 @@ def get_long_description():
 
 setup(
     name = 'django-pglocks',
-    version = django_pglocks.__version__,
-    description = "django_pglocks provides useful context managers for advisory locks for PostgreSQL.",
+    version = '1.0.3',
+    description = "django_pglocks provides useful context managers and decorators for advisory locks for PostgreSQL.",
     long_description = get_long_description(),
     author = "Christophe Pettus",
     author_email = "xof@thebuild.com",
@@ -35,5 +33,11 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Topic :: Software Development',
+    ],
+    install_requires = [
+        'contextdecorator>=0.10.0',
+        'psycopg2>=2.5',
+        'six>=1.9.0',
+        'django>=1.4',
     ]
 )
