@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from zlib import crc32
 
 @contextmanager
-def advisory_lock(lock_id, shared=False, wait=True, using=None):
+def advisory_lock(lock_id, shared=False, wait=True, using=None, xact=False):
 
     from django.db import DEFAULT_DB_ALIAS, connections, transaction
     from django.utils import six
@@ -19,7 +19,7 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     if not wait:
         function_name += 'try_'
 
-    function_name += 'advisory_lock'
+    function_name += 'advisory_%slock' % ('xact_' if xact else '')
 
     if shared:
         function_name += '_shared'
@@ -61,16 +61,29 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     acquire_params = ( function_name, ) + params
 
     command = base % acquire_params
-    cursor = connections[using].cursor()
 
-    cursor.execute(command)
+    connection = connections[using]
 
-    if not wait:
-        acquired = cursor.fetchone()[0]
-    else:
-        acquired = True
+    if xact:
+        in_transaction = False
+
+        if hasattr(connection, 'in_atomic_block'):
+            in_transaction = connection.in_atomic_block
+        else:
+            in_transaction = transaction.is_managed()
+
+        if not in_transaction:
+            raise ValueError('xact requires an active transaction')
 
     try:
+        cursor = connection.cursor()
+        cursor.execute(command)
+
+        if not wait:
+            acquired = cursor.fetchone()[0]
+        else:
+            acquired = True
+
         yield acquired
     finally:
         if acquired:
