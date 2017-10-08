@@ -3,3 +3,6 @@ CHANGES.txt
 LICENSE.txt
 setup.py
 django_pglocks/__init__.py
+django_pglocks/models.py
+django_pglocks/test_settings.py
+django_pglocks/tests.py

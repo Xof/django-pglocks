@@ -64,7 +64,7 @@ To run the test suite, you must create a user and a database::
 
 You can then run the tests with::
 
-    $ DJANGO_SETTINGS_MODULE=django_pglocks.test_settings PYTHONPATH=. django-admin.py test
+    $ tox
 
 License
 =======
