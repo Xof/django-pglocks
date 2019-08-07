@@ -1,4 +1,4 @@
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 from contextlib import contextmanager
 from zlib import crc32
