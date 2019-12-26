@@ -22,6 +22,7 @@ setup(
     author_email = "xof@thebuild.com",
     license = "MIT",
     url = "https://github.com/Xof/django-pglocks",
+    install_requires = ['six>=1.0.0'],
     packages = [
         'django_pglocks',
     ],
