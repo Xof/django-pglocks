@@ -40,7 +40,28 @@ class PgLocksTests(TransactionTestCase):
 
     def test_basic_lock_tuple(self):
         self.assertNumLocks(0)
-        with advisory_lock(123, 456) as acquired:
+        with advisory_lock((123, 456)) as acquired:
+            self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_no_wait(self):
+        self.assertNumLocks(0)
+        with advisory_lock(123, wait=False) as acquired:
+            self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_shared(self):
+        self.assertNumLocks(0)
+        with advisory_lock(123, shared=True) as acquired:
+            self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_shared_no_wait(self):
+        self.assertNumLocks(0)
+        with advisory_lock(123, shared=True, wait=False) as acquired:
             self.assertTrue(acquired)
             self.assertNumLocks(1)
         self.assertNumLocks(0)
