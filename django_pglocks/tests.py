@@ -1,4 +1,4 @@
-from django.db import connection
+from django.db import connection, transaction
 from django.test import TransactionTestCase
 
 from django_pglocks import advisory_lock
@@ -64,4 +64,18 @@ class PgLocksTests(TransactionTestCase):
         with advisory_lock(123, shared=True, wait=False) as acquired:
             self.assertTrue(acquired)
             self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_xact(self):
+        self.assertNumLocks(0)
+        with transaction.atomic(), advisory_lock(123, xact=True) as acquired:
+            self.assertTrue(acquired)
+            self.assertNumLocks(1)
+        self.assertNumLocks(0)
+
+    def test_basic_lock_xact_no_transaction_error(self):
+        with self.assertRaises(ValueError):
+            with advisory_lock(123, xact=True):
+                pass
+
         self.assertNumLocks(0)

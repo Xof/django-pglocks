@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from zlib import crc32
 
 @contextmanager
-def advisory_lock(lock_id, shared=False, wait=True, using=None):
+def advisory_lock(lock_id, shared=False, wait=True, using=None, xact=False):
 
     import six
     from django.db import DEFAULT_DB_ALIAS, connections, transaction
@@ -19,7 +19,12 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     if not wait:
         function_name += 'try_'
 
-    function_name += 'advisory_lock'
+    if xact:
+        if not connections[using].in_atomic_block:
+            raise ValueError("Transaction is required to use xact=True locking mode")
+        function_name += 'advisory_xact_lock'
+    else:
+        function_name += 'advisory_lock'
 
     if shared:
         function_name += '_shared'
