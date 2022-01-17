@@ -46,7 +46,7 @@ The parameters are:
 
 * ``lock_id`` -- The ID of the lock to acquire. It can be a string, long, or a tuple of two ints. If it's a string, the hash of the string is used as the lock ID (PostgreSQL advisory lock IDs are 64 bit values).
 
-* ``shared`` (default False) -- If True, a shared lock is taken. Any number of sessions can hold a shared lock; if another session attempts to take an exclusive lock, it will wait until all shared locks are released; if a session is holding a shared lock, it will block attempts to take a shared lock. If False (the default), an exclusive lock is taken.
+* ``shared`` (default False) -- If True, a shared lock is taken. Any number of sessions can hold a shared lock; if another session attempts to take an exclusive lock, it will wait until all shared locks are released; if a session is holding an exclusive lock, it will block attempts to take a shared lock. If False (the default), an exclusive lock is taken.
 
 * ``wait`` (default True) -- If True (the default), the context manager will wait until the lock has been acquired before executing the content; in that case, it always returns True (unless a deadlock occurs, in which case an exception is thrown). If False, the context manager will return immediately even if it cannot take the lock, in which case it returns false. Note that the context body is *always* executed; the only way to tell in the ``wait=False`` case whether or not the lock was acquired is to check the returned value.
 
