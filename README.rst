@@ -50,7 +50,7 @@ The parameters are:
 
 * ``wait`` (default True) -- If True (the default), the context manager will wait until the lock has been acquired before executing the content; in that case, it always returns True (unless a deadlock occurs, in which case an exception is thrown). If False, the context manager will return immediately even if it cannot take the lock, in which case it returns false. Note that the context body is *always* executed; the only way to tell in the ``wait=False`` case whether or not the lock was acquired is to check the returned value.
 
-* ``comment`` (default False) -- If True, an SQL comment will be appended to the SELECT statement used to acquire and release locks. This comment will include the ``repr()`` of the ``lock_id``, and the calling point for the decorator. This is optional, as it does (slightly) slow down the execution of the decorator. If the Django setting ``ADVISORY_LOCK_COMMENT`` is True, the comment will be added by default (altough ``comment=False`` will override this). If there is no ``ADVISORY_LOCK_COMMENT`` setting, ``DEBUG`` will be used instead.
+* ``comment`` (default False) -- If True, an SQL comment will be appended to the SELECT statement used to acquire and release locks. This comment will include the ``repr()`` of the ``lock_id``, and the calling point for the decorator. This is optional, as it does (slightly) slow down the execution of the decorator. If the Django setting ``ADVISORY_LOCK_COMMENT`` is True, the comment will be added by default (``comment=False`` will override this). If there is no ``ADVISORY_LOCK_COMMENT`` setting, ``DEBUG`` will be used instead.
 
 * ``using`` (default None) -- The database alias on which to attempt to acquire the lock. If None, the default connection is used.
 
