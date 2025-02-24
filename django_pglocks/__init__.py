@@ -6,14 +6,16 @@ from zlib import crc32
 
 
 @contextmanager
-def advisory_lock(lock_id, shared=False, wait=True, comment=False, using=None):
+def advisory_lock(lock_id, shared=False, wait=True, comment=None, using=None):
     import six
     from django.db import DEFAULT_DB_ALIAS, connections, transaction
     from django.conf import settings
 
+    add_comment = False
+    
     if comment:
         add_comment = True
-    else:
+    elif comment is None:
         add_comment = getattr(settings, 'ADVISORY_LOCK_COMMENT', None)
         if add_comment is None:
             add_comment = getattr(settings, 'DEBUG', False)
