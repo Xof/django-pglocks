@@ -1,13 +1,22 @@
-__version__ = '1.0.4'
+__version__ = '1.1'
 
+from inspect import stack, getframeinfo
 from contextlib import contextmanager
 from zlib import crc32
 
-@contextmanager
-def advisory_lock(lock_id, shared=False, wait=True, using=None):
 
+@contextmanager
+def advisory_lock(lock_id, shared=False, wait=True, comment=False, using=None):
     import six
     from django.db import DEFAULT_DB_ALIAS, connections, transaction
+    from django.conf import settings
+
+    if comment:
+        add_comment = True
+    else:
+        add_comment = getattr(settings, 'ADVISORY_LOCK_COMMENT', None)
+        if add_comment is None:
+            add_comment = getattr(settings, 'DEBUG', False)
 
     if using is None:
         using = DEFAULT_DB_ALIAS
@@ -28,6 +37,16 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
     if shared:
         release_function_name += '_shared'
 
+    # If enabled, add a comment to the SELECT statement with the lock_id,
+    # and the calling location.
+    
+    if add_comment:
+        caller = getframeinfo(stack()[2][0])
+            # Up two on the stack frame, since [1] is contextlib.
+        lock_id_comment = '-- %s @ %s:%d' % (repr(lock_id), caller.filename, caller.lineno)
+    else:
+        lock_id_comment = ''
+
     # Format up the parameters.
 
     tuple_format = False
@@ -45,20 +64,20 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
         # crc32 generates an unsigned integer in Py3, we convert it into
         # a signed integer using 2's complement (this is a noop in Py2)
         pos = crc32(lock_id.encode("utf-8"))
-        lock_id = (2**31 - 1) & pos
-        if pos & 2**31:
-            lock_id -= 2**31
+        lock_id = (2 ** 31 - 1) & pos
+        if pos & 2 ** 31:
+            lock_id -= 2 ** 31
     elif not isinstance(lock_id, six.integer_types):
         raise ValueError("Cannot use %s as a lock id" % lock_id)
 
     if tuple_format:
-        base = "SELECT %s(%d, %d)"
-        params = (lock_id[0], lock_id[1],)
+        base = "SELECT %s(%d, %d) %s"
+        params = (lock_id[0], lock_id[1], lock_id_comment)
     else:
-        base = "SELECT %s(%d)"
-        params = (lock_id,)
+        base = "SELECT %s(%d) %s"
+        params = (lock_id, lock_id_comment)
 
-    acquire_params = ( function_name, ) + params
+    acquire_params = (function_name,) + params
 
     command = base % acquire_params
     cursor = connections[using].cursor()
@@ -74,7 +93,7 @@ def advisory_lock(lock_id, shared=False, wait=True, using=None):
         yield acquired
     finally:
         if acquired:
-            release_params = ( release_function_name, ) + params
+            release_params = (release_function_name,) + params
 
             command = base % release_params
             cursor.execute(command)
