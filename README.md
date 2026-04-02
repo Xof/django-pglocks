@@ -49,7 +49,7 @@ async with async_advisory_lock("my_lock") as acquired:
 Both `advisory_lock` and `async_advisory_lock` accept the same parameters. All parameters other than `lock_id` are keyword-only.
 
 - **`lock_id`** — The ID of the lock to acquire. It can be:
-  - A **string**: a SHA-256-based hash is used to generate a 64-bit lock ID.
+  - A **string**: a SHA-256-based hash is used to generate a 64-bit lock ID. **Important:** the algoirthm used to generate the 64-bit lock ID from the input string is not considered an API, and may change at any time, even bug-fix releases.
   - An **integer**: used directly as the lock ID.
   - A **tuple of two integers**: used as the two-argument form of PostgreSQL's advisory lock functions (`classid`, `objid`).
 
