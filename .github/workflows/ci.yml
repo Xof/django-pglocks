@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+  pull_request:
+    branches: [master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - run: uv sync
+      - run: uv run ruff check
+      - run: uv run ruff format --check
+      - run: uv run mypy
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - run: uv build
+      - run: ls -la dist/
+
+  test-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.10"
+            django: "4.2"
+            postgres: "14"
+            psycopg: "psycopg2-binary"
+          - python: "3.13"
+            django: "5.2"
+            postgres: "17"
+            psycopg: "psycopg[binary]"
+          - python: "3.10"
+            django: "5.2"
+            postgres: "17"
+            psycopg: "psycopg[binary]"
+          - python: "3.13"
+            django: "4.2"
+            postgres: "14"
+            psycopg: "psycopg2-binary"
+          - python: "3.11"
+            django: "5.0"
+            postgres: "15"
+            psycopg: "psycopg[binary]"
+          - python: "3.12"
+            django: "5.1"
+            postgres: "16"
+            psycopg: "psycopg2-binary"
+          - python: "3.11"
+            django: "4.2"
+            postgres: "15"
+            psycopg: "psycopg[binary]"
+          - python: "3.12"
+            django: "5.2"
+            postgres: "16"
+            psycopg: "psycopg2-binary"
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_USER: django_pglocks
+          POSTGRES_PASSWORD: django_pglocks
+          POSTGRES_DB: django_pglocks
+        options: >-
+          --health-cmd="pg_isready -U django_pglocks"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync
+      - run: uv pip install 'django~=${{ matrix.django }}.0' '${{ matrix.psycopg }}'
+      - run: uv run pytest -v
+        env:
+          PGHOST: localhost
+          PGPORT: "5432"
+          PGUSER: django_pglocks
+          PGPASSWORD: django_pglocks
+          PGDATABASE: django_pglocks
+
+  test-full:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        django: ["4.2", "5.0", "5.1", "5.2"]
+        postgres: ["14", "15", "16", "17"]
+        psycopg: ["psycopg2-binary", "psycopg[binary]"]
+
+    services:
+      postgres:
+        image: postgres:${{ matrix.postgres }}
+        env:
+          POSTGRES_USER: django_pglocks
+          POSTGRES_PASSWORD: django_pglocks
+          POSTGRES_DB: django_pglocks
+        options: >-
+          --health-cmd="pg_isready -U django_pglocks"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync
+      - run: uv pip install 'django~=${{ matrix.django }}.0' '${{ matrix.psycopg }}'
+      - run: uv run pytest -v
+        env:
+          PGHOST: localhost
+          PGPORT: "5432"
+          PGUSER: django_pglocks
+          PGPASSWORD: django_pglocks
+          PGDATABASE: django_pglocks

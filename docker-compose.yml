@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: django_pglocks
+      POSTGRES_PASSWORD: django_pglocks
+      POSTGRES_DB: django_pglocks
+    ports:
+      - "5432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data

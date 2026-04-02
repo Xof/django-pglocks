@@ -1,35 +1,37 @@
+# Python
 *.py[cod]
-
-# C extensions
+__pycache__/
 *.so
-
-# Packages
 *.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
-lib
-lib64
+*.egg-info/
+dist/
+build/
+.eggs/
 
-# Installer logs
-pip-log.txt
+# Virtual environments
+.venv/
+venv/
 
-# Unit test / coverage reports
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Testing
 .coverage
-.tox
-nosetests.xml
+.pytest_cache/
+htmlcov/
+.tox/
+.mypy_cache/
 
-# Translations
-*.mo
+# uv
+uv.lock
 
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
+# Claude-related
+.claude
+CLAUDE.md
+superpowers

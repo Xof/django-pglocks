@@ -2,7 +2,9 @@
 django-pglocks
 ==============
 
-django-pglocks provides a useful context manager to manage PostgreSQL advisory locks. It requires Django (tested with <= 5.1), PostgreSQL, and (probably) psycopg or psycopg2.
+django-pglocks provides context managers for PostgreSQL advisory locks in Django.
+
+It requires Python 3.10+, Django 4.2+, PostgreSQL 14+, and psycopg2 or psycopg3.
 
 Advisory Locks
 ==============
@@ -11,82 +13,75 @@ Advisory locks are application-level locks that are acquired and released purely
 
 It's entirely up to the application to correctly acquire the right lock.
 
-Advisory locks are either session locks or transaction locks. A session lock is held until the database session disconnects (or is reset); a transaction lock is held until the transaction terminates.
-
-Currently, the context manager only creates session locks, as the behavior of a lock persisting after the context body has been exited is surprising, and there's no way of releasing a transaction-scope advisory lock except to exit the transaction.
+Currently, the context managers only create session-level locks, as the behavior of a lock persisting after the context body has been exited is surprising, and there's no way of releasing a transaction-scope advisory lock except to exit the transaction.
 
 Installing
 ==========
 
-Just use pip::
+::
 
     pip install django-pglocks
-    
-Transactions
-============
-
-This assumes you are controlling transactions within the view; do not use this
-if you controlling transactions through the Django transation middleware.
 
 Usage
 =====
 
-Usage example::
+Synchronous
+-----------
+
+::
 
     from django_pglocks import advisory_lock
 
-    lock_id = 'some lock'
+    with advisory_lock("my_lock") as acquired:
+        # acquired is True; lock is held
+        do_work()
+    # lock is released
 
-    with advisory_lock(lock_id) as acquired:
-        # code that should be inside of the lock.
+Asynchronous
+------------
 
-The context manager attempts to take the lock, and then executes the code inside the context with the lock acquired. The lock is released when the context exits, either normally or via exception.
+::
 
-The parameters are:
+    from django_pglocks import async_advisory_lock
 
-* ``lock_id`` -- The ID of the lock to acquire. It can be a string, long, or a tuple of two ints. If it's a string, the hash of the string is used as the lock ID (PostgreSQL advisory lock IDs are 64 bit values).
+    async with async_advisory_lock("my_lock") as acquired:
+        # acquired is True; lock is held
+        await do_work()
+    # lock is released
 
-* ``shared`` (default False) -- If True, a shared lock is taken. Any number of sessions can hold a shared lock; if another session attempts to take an exclusive lock, it will wait until all shared locks are released; if a session is holding a shared lock, it will block attempts to take a shared lock. If False (the default), an exclusive lock is taken.
+Parameters
+----------
 
-* ``wait`` (default True) -- If True (the default), the context manager will wait until the lock has been acquired before executing the content; in that case, it always returns True (unless a deadlock occurs, in which case an exception is thrown). If False, the context manager will return immediately even if it cannot take the lock, in which case it returns false. Note that the context body is *always* executed; the only way to tell in the ``wait=False`` case whether or not the lock was acquired is to check the returned value.
+* ``lock_id`` -- The ID of the lock to acquire. It can be a string, integer, or a tuple of two integers. If it's a string, a SHA-256 hash is used to generate a 64-bit lock ID.
 
-* ``comment`` (default False) -- If True, an SQL comment will be appended to the SELECT statement used to acquire and release locks. This comment will include the ``repr()`` of the ``lock_id``, and the calling point for the decorator. This is optional, as it does (slightly) slow down the execution of the decorator. If the Django setting ``ADVISORY_LOCK_COMMENT`` is True, the comment will be added by default (``comment=False`` will override this). If there is no ``ADVISORY_LOCK_COMMENT`` setting, ``DEBUG`` will be used instead.
+* ``shared`` (default False) -- If True, a shared lock is taken. Any number of sessions can hold a shared lock; an exclusive lock will wait until all shared locks are released.
 
-* ``using`` (default None) -- The database alias on which to attempt to acquire the lock. If None, the default connection is used.
+* ``wait`` (default True) -- If True, the context manager waits until the lock is acquired (always yields True unless a deadlock occurs). If False, it returns immediately and yields False if the lock could not be acquired. The context body is always executed regardless.
 
-Contributing
-============
+* ``comment`` (default None) -- If True, an SQL comment is appended to the lock statements with the ``repr()`` of the ``lock_id`` and the calling location. If None, checks ``settings.ADVISORY_LOCK_COMMENT``, then ``settings.DEBUG``. Pass ``comment=False`` to override.
 
-To run the test suite, you must create a user and a database::
+* ``using`` (default None) -- The database alias to use. If None, the default connection is used.
 
-    $ createuser -s -P django_pglocks
-    Enter password for new role: django_pglocks
-    Enter it again: django_pglocks
-    $ createdb django_pglocks -O django_pglocks
+Development
+===========
 
-You can then run the tests with::
+With local PostgreSQL::
 
-    $ DJANGO_SETTINGS_MODULE=django_pglocks.test_settings PYTHONPATH=. django-admin.py test
+    uv sync
+    uv run pytest
+
+With Docker Compose::
+
+    docker compose up -d
+    uv run pytest
+    docker compose down
+
+To create the test database (if not using Docker)::
+
+    createuser -s -P django_pglocks
+    createdb django_pglocks -O django_pglocks
 
 License
 =======
 
-It's released under the `MIT License <http://opensource.org/licenses/mit-license.php>`_.
-
-Change History 1.1
-==================
-
-Add optional comment to the end of the lock acquire/release SELECT statement
-with the lock_id and the calling point.
-
-
-Change History 1.0.2
-====================
-
-Fixed bug where lock would not be released when acquired with wait=False.
-Many thanks to Aymeric Augustin for finding this!
-
-Change History 1.0.1
-====================
-
-Removed transaction-level locks, as their behavior was somewhat surprising (having the lock persist after the context manager exited was unexpected behavior).
+Released under the `MIT License <http://opensource.org/licenses/mit-license.php>`_.
