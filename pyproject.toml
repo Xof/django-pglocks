@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "django-pglocks"
 version = "2.0.0"
 description = "Context managers for PostgreSQL advisory locks in Django."
-readme = "README.rst"
+readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
@@ -29,9 +29,11 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development",
 ]
+# NOTE: This package requires a PostgreSQL database adapter (psycopg2 or
+# psycopg3), but does not declare one as a dependency. You must install
+# one yourself — Django needs it too, so you almost certainly already have one.
 dependencies = [
     "django>=4.2",
-    "psycopg2-binary>=2.9.11",
 ]
 
 [project.urls]
@@ -64,6 +66,7 @@ dev = [
     "pytest>=8.0",
     "pytest-django>=4.8",
     "pytest-asyncio>=0.23",
+    "psycopg2-binary>=2.9",
     "mypy>=1.10",
     "ruff>=0.5",
     "django-stubs>=5.0",

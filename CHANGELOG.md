@@ -11,23 +11,24 @@
 
 ### Added
 
-- `async_advisory_lock` — async context manager using Django's async database API.
+- `async_advisory_lock` — async context manager for advisory locks, using `asgiref.sync_to_async` to ensure acquire and release happen on the same PostgreSQL session.
 - Type annotations throughout, with `py.typed` marker (PEP 561).
-- Full test suite with pytest (unit tests + sync/async integration tests).
+- Full test suite with pytest: 35 unit tests + 11 sync integration tests + 9 async integration tests.
 - Docker Compose for contributor setup.
-- GitHub Actions CI with Python/Django/PostgreSQL/psycopg matrix.
+- GitHub Actions CI with Python 3.10-3.13 / Django 4.2-5.2 / PostgreSQL 14-17 / psycopg2+psycopg3 matrix (128 combinations on push, 8 on PRs).
 
 ### Fixed
 
-- SQL queries now use parameterized queries instead of string formatting.
-- Cursor is properly closed if an exception occurs during lock acquisition.
-- Stack frame inspection for comments now walks the stack dynamically instead of using a hardcoded frame index.
-- Lock acquisition result is always consumed from the cursor.
+- SQL queries now use parameterized queries instead of string formatting for lock IDs.
+- Cursor is properly closed via try/finally if an exception occurs during lock acquisition.
+- Stack frame inspection for comments now walks the stack dynamically instead of using a hardcoded frame index, making it resilient to internal refactoring.
+- Lock acquisition result is always consumed from the cursor, even for blocking variants.
 
 ### Changed
 
 - Project uses `pyproject.toml` with hatchling build backend (replaces `setup.py`/`distutils`).
 - Source moved to `src/` layout.
+- Internal logic split into `_lock.py` (pure functions), `_sync.py`, and `_async.py`.
 
 ## 1.1
 
