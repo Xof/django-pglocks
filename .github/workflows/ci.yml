@@ -43,11 +43,11 @@ jobs:
             psycopg: "psycopg2-binary"
           - python: "3.13"
             django: "5.2"
-            postgres: "17"
+            postgres: "18"
             psycopg: "psycopg[binary]"
           - python: "3.10"
             django: "5.2"
-            postgres: "17"
+            postgres: "18"
             psycopg: "psycopg[binary]"
           - python: "3.13"
             django: "4.2"
@@ -63,23 +63,25 @@ jobs:
             psycopg: "psycopg2-binary"
           - python: "3.11"
             django: "4.2"
-            postgres: "15"
-            psycopg: "psycopg[binary]"
+            postgres: "17"
+            psycopg: "psycopg2-binary"
           - python: "3.12"
             django: "5.2"
-            postgres: "16"
+            postgres: "15"
             psycopg: "psycopg2-binary"
+
+    name: "PR: py${{ matrix.python }} dj${{ matrix.django }} pg${{ matrix.postgres }} ${{ matrix.psycopg }}"
 
     services:
       postgres:
         image: postgres:${{ matrix.postgres }}
         env:
-          POSTGRES_USER: django_pglocks
-          POSTGRES_PASSWORD: django_pglocks
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: django_pglocks
         options: >-
-          --health-cmd="pg_isready -U django_pglocks"
-          --health-interval=10s
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
           --health-timeout=5s
           --health-retries=5
         ports:
@@ -94,14 +96,21 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: uv sync
-      - run: uv pip install 'django~=${{ matrix.django }}.0' '${{ matrix.psycopg }}'
+      - name: Install Django and psycopg
+        run: |
+          uv pip install "django~=${{ matrix.django }}.0" "${{ matrix.psycopg }}"
+          if [ "${{ matrix.psycopg }}" = "psycopg2-binary" ]; then
+            uv pip uninstall psycopg psycopg-binary 2>/dev/null || true
+          else
+            uv pip uninstall psycopg2-binary 2>/dev/null || true
+          fi
       - run: uv run pytest -v
         env:
-          PGHOST: localhost
-          PGPORT: "5432"
-          PGUSER: django_pglocks
-          PGPASSWORD: django_pglocks
-          PGDATABASE: django_pglocks
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: django_pglocks
 
   test-full:
     if: github.event_name == 'push'
@@ -111,19 +120,21 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13"]
         django: ["4.2", "5.0", "5.1", "5.2"]
-        postgres: ["14", "15", "16", "17"]
+        postgres: ["14", "15", "16", "17", "18"]
         psycopg: ["psycopg2-binary", "psycopg[binary]"]
+
+    name: "py${{ matrix.python }} dj${{ matrix.django }} pg${{ matrix.postgres }} ${{ matrix.psycopg }}"
 
     services:
       postgres:
         image: postgres:${{ matrix.postgres }}
         env:
-          POSTGRES_USER: django_pglocks
-          POSTGRES_PASSWORD: django_pglocks
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: django_pglocks
         options: >-
-          --health-cmd="pg_isready -U django_pglocks"
-          --health-interval=10s
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=5s
           --health-timeout=5s
           --health-retries=5
         ports:
@@ -138,11 +149,18 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: uv sync
-      - run: uv pip install 'django~=${{ matrix.django }}.0' '${{ matrix.psycopg }}'
+      - name: Install Django and psycopg
+        run: |
+          uv pip install "django~=${{ matrix.django }}.0" "${{ matrix.psycopg }}"
+          if [ "${{ matrix.psycopg }}" = "psycopg2-binary" ]; then
+            uv pip uninstall psycopg psycopg-binary 2>/dev/null || true
+          else
+            uv pip uninstall psycopg2-binary 2>/dev/null || true
+          fi
       - run: uv run pytest -v
         env:
-          PGHOST: localhost
-          PGPORT: "5432"
-          PGUSER: django_pglocks
-          PGPASSWORD: django_pglocks
-          PGDATABASE: django_pglocks
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: django_pglocks
