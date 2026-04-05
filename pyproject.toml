@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "django-pglocks"
-version = "2.0.0"
+version = "2.1.0"
 description = "Context managers for PostgreSQL advisory locks in Django."
 readme = "README.md"
 license = "MIT"
@@ -13,7 +13,7 @@ authors = [
     { name = "Christophe Pettus", email = "xof@thebuild.com" },
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 7 - Inactive",
     "Environment :: Web Environment",
     "Framework :: Django",
     "Framework :: Django :: 4.2",
@@ -34,6 +34,7 @@ classifiers = [
 # one yourself — Django needs it too, so you almost certainly already have one.
 dependencies = [
     "django>=4.2",
+    "django-pg-utils>=0.1.0",
 ]
 
 [project.urls]

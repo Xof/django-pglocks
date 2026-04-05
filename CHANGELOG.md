@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0 (2026-04-04)
+
+**Final release — this package has been consolidated into [django-pg-utils](https://github.com/Xof/django-pg-utils).**
+
+This version is a compatibility shim that depends on `django-pg-utils` and re-exports
+`advisory_lock` and `async_advisory_lock` with a deprecation warning. No further updates
+will be made to this package.
+
 ## 2.0.0 (2026-04-02)
 
 ### Breaking Changes
