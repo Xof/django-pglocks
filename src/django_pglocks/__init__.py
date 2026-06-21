@@ -1,8 +1,9 @@
 import warnings
 
 warnings.warn(
-    "django-pglocks has been consolidated into django-pg-utils. "
-    "Install django-pg-utils and update imports to django_pg_utils.locks. "
+    "django-pglocks has been consolidated into django-pgware. "
+    "Install django-pgware (it imports as django_pg_utils) and update "
+    "imports to django_pg_utils.locks. "
     "This compatibility package will not receive further updates.",
     DeprecationWarning,
     stacklevel=2,

@@ -1,12 +1,13 @@
 # Changelog
 
-## 2.1.0 (2026-04-04)
+## 2.1.0 (2026-06-20)
 
-**Final release — this package has been consolidated into [django-pg-utils](https://github.com/Xof/django-pg-utils).**
+**Final release — this package has been consolidated into [django-pgware](https://github.com/Xof/django-pgware).**
 
-This version is a compatibility shim that depends on `django-pg-utils` and re-exports
-`advisory_lock` and `async_advisory_lock` with a deprecation warning. No further updates
-will be made to this package.
+This version is a compatibility shim that depends on `django-pgware` (installed as
+`django-pgware`, imported as `django_pg_utils`) and re-exports `advisory_lock` and
+`async_advisory_lock` with a deprecation warning. No further updates will be made to
+this package.
 
 ## 2.0.0 (2026-04-02)
 
